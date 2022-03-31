@@ -389,6 +389,9 @@ Consider the following options:
   - Use a [plan guide](../../relational-databases/performance/specify-query-parameterization-behavior-by-using-plan-guides.md) to force parameterization only for the selected query.
   - Configure forced parameterization by using the [parameterization database option](../../relational-databases/databases/database-properties-options-page.md#miscellaneous) command, if there are a small number of different query plans in your workload. An example is when the ratio between the count of distinct query_hash and the total number of entries in sys.query_store_query is much less than 1.
 - Set QUERY_CAPTURE_MODE to AUTO to automatically filter out ad-hoc queries with small resource consumption.
+
+##  Troubleshooting Steps to find out non-parameterized queries
+
 - Use below extended events on the  database server to capture all the events to find out the root cause the performance issue.
 ```sql
   CREATE EVENT SESSION [QueryStore_Troubleshoot] ON SERVER

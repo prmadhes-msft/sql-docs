@@ -389,7 +389,148 @@ Consider the following options:
   - Use a [plan guide](../../relational-databases/performance/specify-query-parameterization-behavior-by-using-plan-guides.md) to force parameterization only for the selected query.
   - Configure forced parameterization by using the [parameterization database option](../../relational-databases/databases/database-properties-options-page.md#miscellaneous) command, if there are a small number of different query plans in your workload. An example is when the ratio between the count of distinct query_hash and the total number of entries in sys.query_store_query is much less than 1.
 - Set QUERY_CAPTURE_MODE to AUTO to automatically filter out ad-hoc queries with small resource consumption.
+- Use below extended events on the  database server to capture all the events to find out the root cause the performance issue.
+```sql
+  CREATE EVENT SESSION [QueryStore_Troubleshoot] ON SERVER
+  ADD EVENT qds.query_store_auto_enable_failure(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_auto_enable_on_create(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_cleanup_task_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_task_creation_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_task_initialization_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_task_persist_failed(
+  ACTION(package0.callstack,sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_task_persist_finished(
+  ACTION(package0.callstack,sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_background_task_persist_started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_begin_persist_runtime_stat(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_bloom_filter_false_positive(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_buffered_items_memory_below_read_write_target(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_buffered_items_over_memory_limit(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_capture_policy_abort_capture(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_capture_policy_evaluate(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_capture_policy_start_capture(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_catch_exception(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_check_consistency_init_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_database_initialization_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_cleanup__finished(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_cleanup__started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_data_structs_not_released(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_diagnostics(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_settings_changed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_db_whitelisting_changed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_disk_size_check_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_disk_size_info(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_execution_runtime_info(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_execution_runtime_info_discarded(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_execution_runtime_info_evicted(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_flush_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_generate_showplan_failure(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_global_mem_obj_size_kb(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_index_rebuild_finished(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_index_rebuild_started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_load_started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_loaded(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_notify_force_failure_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_persist_task_init_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_plan_forcing_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_plan_persistence_failure(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_plan_removal(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_query_persistence_failure(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_read_write_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_schema_consistency_check_failure(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_severe_error_shutdown(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_shutdown_in_error_state_finished(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_shutdown_in_error_state_started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_cleanup_finished(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_cleanup_skipped(
+  ACTION(package0.callstack,sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_cleanup_started(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlos.task_time,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_cleanup_update(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_plan_cost(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_query_cost(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_size_retention_query_deleted(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_statement_not_found(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_stmt_hash_map_over_memory_limit(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_stmt_hash_map_undecided_queries_cleanup(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT qds.query_store_unloaded(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT sqlserver.query_store_failed_to_capture_query(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT sqlserver.query_store_failed_to_find_resource_group(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT sqlserver.query_store_failed_to_load_forced_plan(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name)),
+  ADD EVENT sqlserver.query_store_persist_on_shutdown_failed(
+  ACTION(sqlos.system_thread_id,sqlos.task_address,sqlserver.database_id,sqlserver.database_name))
+  ADD TARGET package0.event_file(SET filename=N'QueryStore',max_file_size=(100))
+  WITH (MAX_MEMORY=4096 KB,EVENT_RETENTION_MODE=ALLOW_SINGLE_EVENT_LOSS,MAX_DISPATCH_LATENCY=30 SECONDS,MAX_EVENT_SIZE=0    KB,MEMORY_PARTITION_MODE=NONE,TRACK_CAUSALITY=OFF,STARTUP_STATE=OFF)
+```
+- You can find out the plan count in Query Store using the below DMV’s.
+```sql
+SELECT count(plan_id) plan_count, query_hash,Txt.query_text_id, Txt.query_sql_text
+FROM sys.query_store_plan AS Pl
+INNER JOIN sys.query_store_query AS Qry
+    ON Pl.query_id = Qry.query_id
+INNER JOIN sys.query_store_query_text AS Txt
+    ON Qry.query_text_id = Txt.query_text_id
+       group by query_hash,Txt.query_text_id, Txt.query_sql_text
+       order by 1 desc
 
+```
 ## <a name="Drop"></a> Avoid a DROP and CREATE pattern for containing objects
 
 Query Store associates query entry with a containing object, such as stored procedure, function, and trigger. When you re-create a containing object, a new query entry is generated for the same query text. This prevents you from tracking performance statistics for that query over time and using a plan forcing mechanism. To avoid this situation, use the `ALTER <object>` process to change a containing object definition whenever it's possible.
